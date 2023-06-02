@@ -5,10 +5,10 @@ account: nurimammasri
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 9233132
-bundleId: 7295974
+bundleId: 7295996
 url: https://nurimammasri.shinyapps.io/entertainment_app/
-when: 1685699058.95403
-lastSyncTime: 1685699058.95408
+when: 1685699548.90764
+lastSyncTime: 1685699548.90765
 asMultiple: FALSE
 asStatic: FALSE
 ignoredFiles: bckp/global.R|bckp/server.R|bckp/ui.R
