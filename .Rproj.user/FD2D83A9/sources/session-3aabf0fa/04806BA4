@@ -3,7 +3,7 @@
     "path": "D:/Data Science - Analyst/Algoritma Data Science School/DV bckp/5. Data Visualization Capstone Project/entertainment_app/EntertainmentApps.Rmd",
     "project_path": "EntertainmentApps.Rmd",
     "type": "r_markdown",
-    "hash": "3295382747",
+    "hash": "0",
     "contents": "",
     "dirty": false,
     "created": 1685649153256.0,
@@ -19,15 +19,15 @@
         "rmdVisualWrapConfigured": "true",
         "docOutlineVisible": "0",
         "rmdVisualCollapsedChunks": "",
-        "rmdVisualModeLocation": "2169:2411.199951171875",
+        "rmdVisualModeLocation": "2321:3134.39990234375",
         "last_setup_crc32": ""
     },
     "folds": "",
-    "lastKnownWriteTime": 1685675935,
+    "lastKnownWriteTime": 1685677090,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1685675935943,
+    "last_content_update": 1685677090583,
     "read_only": false,
     "read_only_alternatives": []
 }

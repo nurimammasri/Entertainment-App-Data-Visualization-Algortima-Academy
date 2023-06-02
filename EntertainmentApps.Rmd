@@ -6,14 +6,15 @@ output: html_document
 ---
 
 ```{r}
-# Import Library Visualization
-library(dplyr) # untuk transformasi data
-library(plotly) # untuk membuat plot menjadi interaktif
-library(glue) # untuk custom informasi saat plot interaktif
-library(scales) # untuk custom keterangan axis atau lainnya
-library(tidyr) # untuk custom keterangan axis atau lainnya
-library(stringr)# untuk melakuan kustom teks pada tooltip
+library(tidyverse)
+library(plotly)
+library(scales)
+library(glue)
+library(DT)
 library(wordcloud2)
+library(readr)
+library(dplyr)
+library(ggplot2)
 ```
 
 ```{r}
