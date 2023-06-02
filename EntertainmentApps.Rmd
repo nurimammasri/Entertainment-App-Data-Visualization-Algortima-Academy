@@ -59,15 +59,22 @@ spotify_genre_clean
 ```
 
 ```{r}
-spotify_by_year <- spotify_clean %>% 
-    group_by(year) %>%
-    summarise(across(c(-artists, -duration_ms, -explicit, -mode, -name, -release_date, -tempo, -id, -loudness, -popularity), \(x) mean(x, na.rm = TRUE)))
+cr <- c("valence", "acousticness", "danceability", "energy", "instrumentalness", "liveness", "speechiness")
+data_agg1 <- spotify_clean %>% 
+  pivot_longer(cols = all_of(cr),
+               names_to = "Variable",
+               values_to = "Value") %>%
+  group_by(year, Variable) %>% 
+  summarize(Value = mean(Value))  %>% 
+filter(year>=2000)
 
-data_agg1 <- spotify_by_year %>% 
-  select(-key) %>% 
-  gather(key = "Variable", value = "Value", - year)
+data_agg1
+```
 
-plot1 <- ggplot(data_agg1, aes(x = year, y = Value)) + 
+```{r}
+
+
+plot1 <- ggplot(data_agg1, mapping=aes(x = year, y = Value)) + 
   geom_line(aes(color = Variable))  + 
   scale_color_manual(values = c("red", "green", "orange", "purple", "blue", "black", "darkgreen")) + 
   guides(color = "none") + 
@@ -77,6 +84,17 @@ plot1 <- ggplot(data_agg1, aes(x = year, y = Value)) +
 
 
 ggplotly(plot1)
+```
+
+```{r}
+spotify_by_genre <- spotify_genre %>%
+  group_by(genres) %>%
+  summarise(mean_popularity = round(mean(popularity), 2)) %>%
+  ungroup()%>% 
+  arrange(desc(mean_popularity)) %>% 
+  head(300)
+
+wordcloud2(spotify_by_genre, color = "random-dark", size=0.3, backgroundColor = "white")
 ```
 
 ```{r}
@@ -100,4 +118,28 @@ plot_rank <- ggplot(data_agg2,
   theme_minimal()
 
 ggplotly(plot_rank, tooltip = "text")
+```
+
+```{r}
+data_agg_4 <- spotify_clean %>%
+  filter(year == 2020) %>%
+  arrange(desc(popularity)) %>%
+  head(1000)
+data_agg_4
+```
+
+```{r}
+plot_dist <- 
+  ggplot(data_agg_4, mapping=aes(x = energy, y = loudness)) +
+  geom_jitter(aes(col = as.factor(explicit),
+                  text = glue("{str_to_upper(explicit)}
+                              Title: {name}
+                              Artists: {artists}
+                              Popularity: {popularity}"))) +
+  labs(x = "energy", y = "loudness",
+       title = glue("Distribution of Songs")) +
+  guides(color = "none") +
+  theme_minimal()
+
+ggplotly(plot_dist, tooltip = "text")
 ```
