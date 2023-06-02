@@ -3,7 +3,7 @@ dashboardPage(
   skin = "green",
   
   # HEADER
-  dashboardHeader(title = "Spotify Analysis"),
+  dashboardHeader(title = "Entertainment App - Spotify & Netflix"),
   
   # SIDEBAR
   dashboardSidebar(

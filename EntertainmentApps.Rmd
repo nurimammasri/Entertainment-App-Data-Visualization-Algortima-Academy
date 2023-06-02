@@ -7,8 +7,6 @@ output: html_document
 
 ```{r}
 # Import Library Visualization
-library(tidyverse)
-library(ggplot2)
 library(dplyr) # untuk transformasi data
 library(plotly) # untuk membuat plot menjadi interaktif
 library(glue) # untuk custom informasi saat plot interaktif
@@ -16,11 +14,10 @@ library(scales) # untuk custom keterangan axis atau lainnya
 library(tidyr) # untuk custom keterangan axis atau lainnya
 library(stringr)# untuk melakuan kustom teks pada tooltip
 library(wordcloud2)
-library(readr)
 ```
 
 ```{r}
-spotify <- read_csv("datasets/data.csv", show_col_types = FALSE)
+spotify <- read.csv("datasets/data.csv")
 spotify$artists <- str_replace_all(spotify$artists, c("\\[" = "", "\\]" = "", "'"=""))
 glimpse(spotify)
 ```
@@ -37,13 +34,13 @@ spotify_clean <- spotify %>%
   mutate(across(all_of(int_cols), as.integer)) %>% 
   mutate(release_date = ifelse(nchar(release_date) == 4, paste(release_date,"-01-01", sep=""), release_date)) %>% 
   mutate(release_date = as.Date(release_date)) %>% 
-  arrange(spotify_clean$year)
+  arrange(spotify$year)
 
 spotify_clean
 ```
 
 ```{r}
-spotify_genre <- read_csv("datasets/data_by_genres.csv", show_col_types = FALSE)
+spotify_genre <- read.csv("datasets/data_by_genres.csv")
 glimpse(spotify_genre)
 ```
 
@@ -63,7 +60,7 @@ spotify_genre_clean
 ```{r}
 spotify_by_year <- spotify_clean %>% 
     group_by(year) %>%
-    summarise(across(c(-artists, -duration_ms, -explicit, -mode, -name, -release_date, -tempo, -id, -loudness, -popularity), mean, na.rm = TRUE))
+    summarise(across(c(-artists, -duration_ms, -explicit, -mode, -name, -release_date, -tempo, -id, -loudness, -popularity), \(x) mean(x, na.rm = TRUE)))
 
 data_agg1 <- spotify_by_year %>% 
   select(-key) %>% 
@@ -72,11 +69,34 @@ data_agg1 <- spotify_by_year %>%
 plot1 <- ggplot(data_agg1, aes(x = year, y = Value)) + 
   geom_line(aes(color = Variable))  + 
   scale_color_manual(values = c("red", "green", "orange", "purple", "blue", "black", "darkgreen")) + 
-  guides(color = FALSE) + 
+  guides(color = "none") + 
   labs(x = "Year", y = "Value", title = "Preference Music Taste in the Past Century on Spotify") + 
   scale_x_continuous(limits = c(1921, 2020), breaks = seq(1921, 2020, 10)) +
   theme_minimal()
 
 
 ggplotly(plot1)
+```
+
+```{r}
+data_agg2 <- spotify_clean %>%
+  filter(year == 2020) %>%
+  select(name, popularity, artists) %>%
+  arrange(desc(popularity)) %>%
+  mutate(text = glue("popularity: {popularity}
+                      artists: {artists}")) %>%
+  head(15)
+
+plot_rank <- ggplot(data_agg2,
+                    aes(x = popularity, y = reorder(name, popularity),
+                        text = text)) +
+  geom_col(aes(fill = popularity)) +
+  scale_y_discrete(labels = wrap_format(30)) +
+  scale_x_continuous(limits = c(0, 100), breaks = seq(0, 100, 10)) +
+  scale_fill_gradient(low = "light blue", high = "dark blue") +
+  labs(x = "Popularity (0-100)", y = NULL,
+       title = glue("Top 15 Popular Songs")) +
+  theme_minimal()
+
+ggplotly(plot_rank, tooltip = "text")
 ```

@@ -9,7 +9,7 @@ shinyServer(function(input, output) {
   output$plot1 <- renderPlotly({
     data_agg1 <- spotify_by_year %>% 
       select(-key) %>% 
-      gather(key = "Variable", value = "Value", - year)
+      gather(key = "Variable", value = "Value", -year)
     
     
     plot1<- ggplot(data_agg1, aes(x = year, y = Value)) + 

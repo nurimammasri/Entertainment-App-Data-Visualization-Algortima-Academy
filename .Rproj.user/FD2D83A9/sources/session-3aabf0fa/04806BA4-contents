@@ -69,7 +69,7 @@ data_agg1 <- spotify_by_year %>%
 plot1 <- ggplot(data_agg1, aes(x = year, y = Value)) + 
   geom_line(aes(color = Variable))  + 
   scale_color_manual(values = c("red", "green", "orange", "purple", "blue", "black", "darkgreen")) + 
-  guides(color = FALSE) + 
+  guides(color = "none") + 
   labs(x = "Year", y = "Value", title = "Preference Music Taste in the Past Century on Spotify") + 
   scale_x_continuous(limits = c(1921, 2020), breaks = seq(1921, 2020, 10)) +
   theme_minimal()
