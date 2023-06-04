@@ -169,6 +169,22 @@ top_type <- df_netflix %>%
   mutate(percent = round(n_type / sum(n_type), 2))
 
 
+# For World Map
+mapdata <- map_data("world")
+
+netflix_for_map <- df_netflix %>%
+  mutate(main_country = str_replace_all(
+    main_country,
+    c(
+      "United States" = "USA",
+      "United Kingdom" = "UK",
+      "Hong Kong" = "China",
+      "Soviet Union" = "Russia",
+      "West Germany" = "Germany"
+    )
+  ))
+
+
 # Network director vs cast
 for_network <- df_netflix %>%
   select(director, cast) %>%
