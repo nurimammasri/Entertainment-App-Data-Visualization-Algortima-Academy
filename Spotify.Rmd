@@ -18,7 +18,7 @@ library(ggplot2)
 ```
 
 ```{r}
-spotify <- read.csv("datasets/data.csv")
+spotify <- read.csv("datasets/spotify/data.csv")
 spotify$artists <- str_replace_all(spotify$artists, c("\\[" = "", "\\]" = "", "'"=""))
 glimpse(spotify)
 ```
@@ -41,7 +41,7 @@ spotify_clean
 ```
 
 ```{r}
-spotify_genre <- read.csv("datasets/data_by_genres.csv")
+spotify_genre <- read.csv("datasets/spotify/data_by_genres.csv")
 glimpse(spotify_genre)
 ```
 
@@ -65,15 +65,12 @@ data_agg1 <- spotify_clean %>%
                names_to = "Variable",
                values_to = "Value") %>%
   group_by(year, Variable) %>% 
-  summarize(Value = mean(Value))  %>% 
-filter(year>=2000)
+  summarize(Value = mean(Value))
 
 data_agg1
 ```
 
 ```{r}
-
-
 plot1 <- ggplot(data_agg1, mapping=aes(x = year, y = Value)) + 
   geom_line(aes(color = Variable))  + 
   scale_color_manual(values = c("red", "green", "orange", "purple", "blue", "black", "darkgreen")) + 
@@ -87,6 +84,30 @@ ggplotly(plot1)
 ```
 
 ```{r}
+spotify_year <- read_csv("datasets/spotify/data_by_year.csv", show_col_types = FALSE)
+head(spotify_year)
+```
+
+```{r}
+data_year <- spotify_year %>% 
+  select(year, acousticness, energy, instrumentalness, liveness) %>% 
+  gather(key = "variable", value = "value", -year)
+data_year
+```
+
+```{r}
+plot_time <- ggplot(data_year, aes(x = year, y = value)) + 
+  geom_line(aes(color = variable)) + 
+  scale_color_manual(values = c("red", "green", "orange", "purple")) + 
+  guides(color = "none") + 
+  labs(x = "Year", y = "Value", title = "Music Taste in the Past Century") + 
+  scale_x_continuous(limits = c(1920, 2020), breaks = seq(1920, 2020, 20)) +
+  theme_minimal()
+
+ggplotly(plot_time)
+```
+
+```{r}
 spotify_by_genre <- spotify_genre %>%
   group_by(genres) %>%
   summarise(mean_popularity = round(mean(popularity), 2)) %>%
@@ -95,6 +116,25 @@ spotify_by_genre <- spotify_genre %>%
   head(300)
 
 wordcloud2(spotify_by_genre, color = "random-dark", size=0.3, backgroundColor = "white")
+```
+
+```{r}
+spotify_genre %>%
+  head(20) %>% 
+  ggplot(aes(x = reorder(genres, -counts), y = counts)) + 
+    geom_col(fill = 'royalblue4') +
+    geom_text(aes(label = round(counts, 1)), vjust = 1.5, color = "white", size = 3.8) +
+    scale_y_continuous(expand = c(0, 0)) +
+    labs(title = "What is your favourite animal?",
+         subtitle = "Percent of respondents") +
+    theme(
+      panel.background = element_rect(fill = NA),
+      panel.grid.major = element_blank(),
+      axis.ticks = element_blank(),
+      axis.title = element_blank(),
+      axis.text.x = element_text(size = 10, margin = margin(5, 0, 0, 0), angle = 90, hjust = 1),
+      axis.text.y = element_blank()
+    )
 ```
 
 ```{r}

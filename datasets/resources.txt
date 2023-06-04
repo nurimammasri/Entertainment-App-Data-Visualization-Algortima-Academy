@@ -1,1 +1,7 @@
+Spotify :
+
 https://www.kaggle.com/datasets/vatsalmavani/spotify-dataset
+
+Netflix :
+
+https://www.kaggle.com/datasets/edriendominickofina/netflix-titles

@@ -1,0 +1,449 @@
+---
+title: "Netflix"
+author: "Nur Imam Masri"
+date: "2023-06-04"
+output: html_document
+---
+
+## Read Data
+
+```{r}
+# Import Library Dashboard
+library(shiny)
+library(shinydashboard)
+library(shinyWidgets)
+
+# Import Library Visualization
+library(tidyverse)
+library(dplyr) # untuk transformasi data
+library(plotly) # untuk membuat plot menjadi interaktif
+library(glue) # untuk custom informasi saat plot interaktif
+library(scales) # untuk custom keterangan axis atau lainnya
+library(tidyr) # untuk custom keterangan axis atau lainnya
+library(stringr)# untuk melakuan kustom teks pada tooltip
+library(DT) # untuk menampilkan dataset
+library(wordcloud2)
+library(lubridate)
+# library(maps)
+library(igraph)
+library(networkD3)
+library(highcharter) 
+library(visdat)
+```
+
+```{r}
+df_netflix <- read.csv("datasets/netflix/netflix_titles.csv")
+df_netflix
+```
+
+```{r}
+glimpse(df_netflix)
+```
+
+## Check Missing Values
+
+```{r}
+colSums(is.na(df_netflix))
+```
+
+```{r}
+df_netflix[is_empty(df_netflix) | df_netflix == ""] <- NA
+colSums(is.na(df_netflix))
+```
+
+```{r}
+vis_miss(df_netflix, sort_miss = T, cluster = T)
+```
+
+```{r}
+# Handling Missing Values
+mode <- function(x){
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
+
+df_netflix <- df_netflix %>% 
+  replace_na(list(director = "Unknown",
+                  cast = "Unknown",
+                  country = mode(df_netflix$country), 
+                  date_added = mode(df_netflix$date_added),
+                  rating = mode(df_netflix$rating)
+                  ))
+vis_miss(df_netflix)
+```
+
+```{r}
+df_netflix <- df_netflix %>%
+  mutate(main_country = map(str_split(country, ", "), 1), 
+         main_cast = map(str_split(cast, ", "), 1), 
+         genre = map(str_split(listed_in, ", "), 1)) %>% 
+  unnest(cols = c(main_country, main_cast, genre)) %>% 
+  mutate(type = as.factor(type), 
+         date_added = mdy(date_added),
+         year_added = year(date_added),
+         main_country = str_remove(main_country, ","),
+         target_age = factor(sapply(rating, switch, 
+                             'TV-PG' = 'Older Kids', 
+                             'TV-MA' = 'Adults', 
+                             'TV-Y7-FV' = 'Older Kids',
+                             'TV-Y7' = 'Older Kids',
+                             'TV-14' = 'Teens',
+                             'R' = 'Adults',
+                             'TV-Y' = 'Kids',
+                             'NR' = 'Adults',
+                             'PG-13' = 'Teens',
+                             'TV-G' = 'Kids',
+                             'PG' = 'Older Kids',
+                             'G' = 'Kids',
+                             'UR' = 'Adults',
+                             'NC-17' = 'Adults'), level = c("Kids", "Older Kids", "Teens", "Adults"))
+         ) 
+head(df_netflix)
+```
+
+```{r}
+df_netflix[is.na(df_netflix$date_added),]
+```
+
+```{r}
+anyDuplicated(df_netflix)
+```
+
+## Movies and TV Shows
+
+```{r}
+top_type <- df_netflix %>%
+  group_by(type) %>%
+  summarise(n_type = n()) %>%
+  ungroup() %>%
+  arrange(desc(n_type)) %>% 
+  mutate(percent = round(n_type/sum(n_type), 2))
+
+top_type
+
+n_movies <- top_type[top_type$type == "Movie",]$n_type
+n_movies_pc <- top_type[top_type$type == "Movie",]$percent*100
+cat("Movies =", n_movies, "(",n_movies_pc,"%)",  "\n\n")
+
+n_tvshows <- top_type[top_type$type == "TV Show",]$n_type
+n_tvshows_pc <- top_type[top_type$type == "TV Show",]$percent*100
+cat("TV Shows =", n_tvshows, "(",n_tvshows_pc ,"%)")
+```
+
+```{r}
+type_plot <- top_type %>% 
+  ggplot(aes(x="", y=percent, fill=type)) +
+  geom_bar(width = 1, stat = "identity") + 
+  coord_polar("y", start=0) + 
+  scale_fill_manual(values=c("firebrick", "grey16")) +
+  theme_minimal() +
+  theme(
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.border = element_blank(),
+    panel.grid=element_blank(),
+    axis.ticks = element_blank(),
+    plot.title=element_text(size=14, face="bold")
+  ) +
+  theme(axis.text.x=element_blank()) +
+  geom_text(aes(y = percent/3 + c(0, cumsum(percent)[-length(percent)]), 
+            label = percent(percent)), size=5, color="white")
+
+type_plot
+```
+
+```{r}
+type_plot <- top_type %>%
+  hchart("pie", hcaes(x = type, y = percent, color = setNames(c("#b22222","#292929"),levels(top_type$type))), name = "Content Distribution") %>%
+  hc_title(
+    text = "<b>Content type Distribution</b>",
+    margin = 0,
+    align = "left",
+    style = list(useHTML = TRUE)
+  )
+
+type_plot
+```
+
+## Genres x Content
+
+```{r}
+genre_plot <- df_netflix %>%
+    filter(year_added %>% between(2008, 2020)) %>%
+    group_by(genre) %>%
+    summarise(num_of_contents = n()) %>%
+    ungroup() %>%
+    arrange(desc(num_of_contents)) %>%
+    head(10) %>%
+    ggplot(aes(x = num_of_contents, y = fct_reorder(genre, num_of_contents))) +
+    geom_col(fill = "grey16", alpha = .9, aes(
+        text = paste0(genre, "<br>",
+                      "Num. of Contents: ",
+                      num_of_contents)
+    )) +
+    scale_y_discrete(
+        label = function(x)
+            stringr::str_trunc(x, 12)
+    ) +
+    labs(
+        title = NULL,
+        x = "Number of Contents",
+        y = "",
+        color = "",
+    ) +
+    theme_minimal() +
+    theme(
+        title = element_text(face = "bold"),
+        text = element_text(family = "lato"),
+        panel.grid = element_blank(),
+        panel.grid.major.x = element_line(color = "grey88"),
+        axis.text.y = element_text(angle = 45)
+    )
+
+ggplotly(genre_plot, tooltip = "text") %>%
+    config(displayModeBar = F)
+```
+
+## Content x Main Cast
+
+```{r}
+top_cast <- df_netflix %>%
+  filter(main_cast != "Unknown") %>%
+  group_by(main_cast) %>%
+  summarise(num_of_content = n()) %>%
+  ungroup() %>%
+  arrange(desc(num_of_content)) %>%
+  head(10)
+
+top_cast
+```
+
+```{r}
+fig_no_cast <- df_netflix %>%
+    select(title, cast, country, genre, target_age, type) %>%
+    mutate(cast_count = lengths(str_split(cast, ", "))) %>%
+    arrange(desc(cast_count)) %>%
+    head(10) %>%
+    ggplot(aes(x = cast_count, y = fct_reorder(title, cast_count))) +
+    geom_col(alpha = 0.9, fill = "firebrick", aes(
+        text = paste0(
+            title,
+            "<br>",
+            "Country: ",
+            str_trunc(country, 22),
+            "<br>",
+            "Num. of Casts: ",
+            cast_count
+        )
+    )) +
+    scale_y_discrete(
+        label = function(x)
+            stringr::str_trunc(x, 12)
+    ) +
+    labs(
+        title = NULL,
+        x = "Number of Casts",
+        y = "Title of The Contents",
+        color = "",
+    ) +
+    theme_minimal() +
+    theme(
+        title = element_text(face = "bold"),
+        text = element_text(family = "lato"),
+        panel.grid = element_blank(),
+        panel.grid.major.x = element_line(color = "grey88"),
+        axis.text.y = element_text(angle = 45)
+    )
+
+ggplotly(fig_no_cast, tooltip = "text") %>%
+    config(displayModeBar = F)
+```
+
+## Director x Content
+
+```{r}
+top_dir <- df_netflix %>%
+  filter(director != "Unknown") %>%
+  group_by(director) %>%
+  summarise(num_of_content = n()) %>%
+  ungroup() %>%
+  arrange(desc(num_of_content)) %>%
+  head(10)
+top_dir
+```
+
+```{r}
+director_plot <- df_netflix %>%
+    filter(director != "Unknown") %>%
+    group_by(director) %>%
+    summarise(num_of_contents = n()) %>%
+    ungroup() %>%
+    arrange(desc(num_of_contents)) %>%
+    head(10) %>%
+    ggplot(aes(x = num_of_contents, y = fct_reorder(director, num_of_contents))) +
+    geom_col(fill = "#FEDF00", alpha = .9, aes(
+        text = paste0(director, "<br>",
+                      "Num. of Contents: ",
+                      num_of_contents)
+    )) +
+    scale_y_discrete(
+        label = function(x)
+            stringr::str_trunc(x, 12)
+    ) +
+    labs(
+        title = NULL,
+        x = "Number of Contents",
+        y = "",
+        color = "",
+    ) +
+    theme_minimal() +
+    theme(
+        title = element_text(face = "bold"),
+        text = element_text(family = "lato"),
+        panel.grid = element_blank(),
+        panel.grid.major.x = element_line(color = "grey88"),
+        axis.text.y = element_text(angle = 45)
+    )
+
+ggplotly(director_plot, tooltip = "text") %>%
+    config(displayModeBar = F)
+```
+
+```{r}
+head(df_netflix)
+```
+
+## Age x Type Content
+
+```{r}
+box_plot <- df_netflix %>%
+    mutate(age_dist = (max(date_added) - date_added) / 365) %>% 
+    ggplot(aes(x = type, y = age_dist)) +
+    geom_boxplot(width = 0.05, aes(fill = type), alpha = 0.8) + #add stat_summary next time
+    scale_fill_manual(values = c("firebrick", "grey16")) +
+    labs(x = "",
+         y = "Num. of Years", ) +
+    theme_minimal() +
+    theme(
+        legend.position = "none",
+        text = element_text(family = "lato"),
+        panel.grid.major.x = element_blank()
+    )
+
+ggplotly(box_plot) %>%
+    config(displayModeBar = F)
+```
+
+## Trending Movies vs TVShows in Years
+
+```{r}
+accumulate_by <- function(dat, var) {
+  var <- lazyeval::f_eval(var, dat)
+  lvls <- plotly:::getLevels(var)
+  dats <- lapply(seq_along(lvls), function(x) {
+    cbind(dat[var %in% lvls[seq(1, x)], ], frame = lvls[[x]])
+  })
+  dplyr::bind_rows(dats)
+}
+
+mtv_growth <- df_netflix %>% 
+  group_by(year_added, type) %>% 
+  summarise(movie_count = n()) %>% 
+  ungroup() %>% 
+  mutate(cumulative_count = ave(movie_count, type, FUN = cumsum)) %>% 
+  accumulate_by(~year_added) %>% 
+  ggplot(aes(x = year_added, y = cumulative_count, color = type, frame = frame)) +
+  geom_line(size = 1.5, alpha = 0.8)+
+  geom_point(size = 3.5, shape = 21, fill = "white", aes(text = paste0("Year: ", year_added, "<br>",
+                                                   "Content Count: ", cumulative_count))) + 
+  scale_color_manual(values = c("firebrick", "grey16")) +
+  scale_x_continuous(breaks= pretty_breaks())+
+  scale_y_continuous(labels = scales::comma) +
+  labs(title = "Growth Numbers of Movies and TV Shows by Year",
+       x = "",
+       y = "Number of Movies/TV Shows",
+       color = "",
+  ) +
+  theme_minimal() +
+  theme(title = element_text(face = "bold"),
+        text = element_text(family = "lato"))
+
+
+ggplotly(mtv_growth, tooltip = c("text", "frame")) %>%
+      animation_slider(currentvalue = list(prefix = "Year: ", font = list(color = "grey16"))) %>%
+      config(displayModeBar = F)
+```
+
+## World Map Content
+
+```{r}
+mapdata <- map_data("world")
+
+netflix_for_map <- df_netflix %>%
+  mutate(main_country = str_replace_all(
+    main_country,
+    c(
+      "United States" = "USA",
+      "United Kingdom" = "UK",
+      "Hong Kong" = "China",
+      "Soviet Union" = "Russia",
+      "West Germany" = "Germany"
+    )
+  ))
+
+count_country <- netflix_for_map %>%
+    group_by(main_country) %>%
+    summarise(content_count = n()) %>%
+    ungroup() %>%
+    arrange(desc(content_count))
+
+map_join <- mapdata %>%
+    left_join(. , count_country, by = c("region" = "main_country")) %>%
+    mutate(content_count = replace_na(content_count, 0))
+
+
+temp <- ggplot() +
+    geom_polygon(
+        data = map_join,
+        aes(
+            fill = content_count,
+            x = long,
+            y = lat,
+            group = group,
+            text = paste0(region, "<br>",
+                          "Netflix Contents: ", content_count)
+        ),
+        size = 0,
+        alpha = .9,
+        color = "black"
+    ) +
+    theme_void() +
+    scale_fill_gradient(
+        name = "Content Count",
+        trans = "pseudo_log",
+        breaks = c(0, 7, 56, 403, 3000),
+        labels = c(0, 7, 56, 403, 3000),
+        low =  "bisque2",
+        high = "#b20710"
+    ) +
+    theme(
+        panel.grid.major = element_blank(),
+        axis.line = element_blank(),
+        text = element_text(family = "lato")
+    )
+
+
+ggplotly(temp, tooltip = "text") %>%
+    config(displayModeBar = F)
+```
+
+```{r}
+for_network <- df_netflix %>% 
+  select(director, cast) %>% 
+  mutate(director = str_split(director, ", ")) %>% 
+  unnest(cols = c(director)) %>% 
+  mutate(cast = str_split(cast, ", ")) %>% 
+  unnest(c(cast))
+
+for_network
+```
