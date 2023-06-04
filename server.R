@@ -39,13 +39,19 @@ shinyServer(function(input, output) {
   # Distribution Movies vs TV Shows - Dynamic
   output$type_plot2 <- renderHighchart({
     type_plot <- top_type %>%
-      hchart("pie", hcaes(x = type, y = percent, color = setNames(c("#b22222","#292929"),levels(top_type$type))), name = "Content Distribution") %>%
+      hchart("pie", hcaes(x = type, y = percent, 
+                          color = setNames(c("#b22222","#292929"),
+                                           levels(top_type$type))), 
+             name = "Content Distribution") %>%
       hc_title(
-        text = "<b>Content type Distribution</b>",
+        text = "<b>Content Type Distribution</b>",
         margin = 0,
         align = "left",
         style = list(useHTML = TRUE)
-      )
+      ) %>% 
+      hc_tooltip(formatter = JS("function(){
+                            return (this.point.type + ' <br> Jumlah : ' + this.point.n_type + '('+this.point.percent+')')
+                            }"))
     
     type_plot
   })
@@ -66,10 +72,8 @@ shinyServer(function(input, output) {
                       "Num. of Contents: ",
                       num_of_contents)
       )) +
-      scale_y_discrete(
-        label = function(x)
-          stringr::str_trunc(x, 12)
-      ) +
+      scale_y_discrete(labels = wrap_format(30)) +
+      scale_x_continuous(breaks= pretty_breaks())+
       labs(
         title = NULL,
         x = "Number of Contents",
@@ -82,7 +86,7 @@ shinyServer(function(input, output) {
         text = element_text(family = "lato"),
         panel.grid = element_blank(),
         panel.grid.major.x = element_line(color = "grey88"),
-        axis.text.y = element_text(angle = 45)
+        axis.text.y = element_text(angle = 0)
       )
     
     ggplotly(genre_plot, tooltip = "text") %>%
@@ -109,10 +113,10 @@ shinyServer(function(input, output) {
     
     
     valueBox(
-      value = top_cast$main_cast,
+      value = tags$p(top_cast$main_cast, style = "font-size: 50%;"),
       subtitle = "Top Main Cast by Content Counts",
-      color = "red",
-      icon = icon("star")
+      color = "orange",
+      icon = tags$i(class = "fas fa-star", style="font-size: 50%; margin:10")
     )
   })
   
@@ -140,10 +144,8 @@ shinyServer(function(input, output) {
           cast_count
         )
       )) +
-      scale_y_discrete(
-        label = function(x)
-          stringr::str_trunc(x, 12)
-      ) +
+      scale_y_discrete(labels = wrap_format(30)) +
+      scale_x_continuous(breaks= pretty_breaks())+
       labs(
         title = NULL,
         x = "Number of Casts",
@@ -156,7 +158,7 @@ shinyServer(function(input, output) {
         text = element_text(family = "lato"),
         panel.grid = element_blank(),
         panel.grid.major.x = element_line(color = "grey88"),
-        axis.text.y = element_text(angle = 45)
+        axis.text.y = element_text(angle = 0)
       )
     
     ggplotly(fig_no_cast, tooltip = "text") %>%
@@ -183,10 +185,10 @@ shinyServer(function(input, output) {
       head(1)
     
     valueBox(
-      value = top_dir$director,
+      value = tags$p(top_dir$director, style = "font-size: 50%;"),
       subtitle = "Top Director by Content Counts",
       color = "red",
-      icon = icon("video")
+      icon = tags$i(class = "fas fa-video", style="font-size: 50%; margin:10")
     )
   })
   
@@ -194,7 +196,7 @@ shinyServer(function(input, output) {
   output$director_plot <- renderPlotly({
     director_plot <- df_netflix %>%
       filter(director != "Unknown") %>%
-      filter(year_added %>% between(input$year_added2[1], input$year_added2[2])) %>%
+      filter(year_added %>% between(input$year_added[1], input$year_added[2])) %>%
       group_by(director) %>%
       summarise(num_of_contents = n()) %>%
       ungroup() %>%
@@ -206,10 +208,8 @@ shinyServer(function(input, output) {
                       "Num. of Contents: ",
                       num_of_contents)
       )) +
-      scale_y_discrete(
-        label = function(x)
-          stringr::str_trunc(x, 12)
-      ) +
+      scale_y_discrete(labels = wrap_format(30)) +
+      scale_x_continuous(breaks= pretty_breaks())+
       labs(
         title = NULL,
         x = "Number of Contents",
@@ -222,7 +222,7 @@ shinyServer(function(input, output) {
         text = element_text(family = "lato"),
         panel.grid = element_blank(),
         panel.grid.major.x = element_line(color = "grey88"),
-        axis.text.y = element_text(angle = 45)
+        axis.text.y = element_text(angle = 0)
       )
     
     ggplotly(director_plot, tooltip = "text") %>%
@@ -368,6 +368,7 @@ shinyServer(function(input, output) {
       ) +
       scale_color_manual(values = c("firebrick", "grey16")) +
       scale_y_continuous(labels = scales::comma) +
+      scale_x_continuous(breaks= pretty_breaks())+
       labs(
         title = "Growth Numbers of Netflix Contents by Year",
         x = "",

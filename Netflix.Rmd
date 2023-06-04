@@ -154,13 +154,19 @@ type_plot
 
 ```{r}
 type_plot <- top_type %>%
-  hchart("pie", hcaes(x = type, y = percent, color = setNames(c("#b22222","#292929"),levels(top_type$type))), name = "Content Distribution") %>%
+  hchart("pie", hcaes(x = type, y = percent, 
+                      color = setNames(c("#b22222","#292929"),
+                                       levels(top_type$type))), 
+         name = "Content Distribution") %>%
   hc_title(
-    text = "<b>Content type Distribution</b>",
+    text = "<b>Content Type Distribution</b>",
     margin = 0,
     align = "left",
     style = list(useHTML = TRUE)
-  )
+  ) %>% 
+  hc_tooltip(formatter = JS("function(){
+                            return (this.point.type + ' <br> Jumlah : ' + this.point.n_type + '('+this.point.percent*100+'%)')
+                            }"))
 
 type_plot
 ```

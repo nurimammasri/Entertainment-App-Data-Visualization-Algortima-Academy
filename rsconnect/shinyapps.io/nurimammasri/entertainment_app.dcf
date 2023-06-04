@@ -5,9 +5,9 @@ account: nurimammasri
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 9233132
-bundleId: 7302149
+bundleId: 7303798
 url: https://nurimammasri.shinyapps.io/entertainment_app/
-when: 1685870010.94931
-lastSyncTime: 1685870010.9494
+when: 1685917317.05877
+lastSyncTime: 1685917317.05881
 asMultiple: FALSE
 asStatic: FALSE

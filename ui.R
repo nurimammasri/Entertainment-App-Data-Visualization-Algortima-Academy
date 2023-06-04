@@ -159,24 +159,30 @@ dashboardPage(
                    plotlyOutput("mtv_growth", height = 350)
                  ))
                ),
-               br(),
                
                
                
                fluidRow(column(
                  width = 9,
                  box(
-                   width = 16,
                    solidHeader = T,
                    h3(tags$b("Most Common Genres")),
                    plotlyOutput("genre_plot")
+                 ), 
+                 box(
+                   solidHeader = T,
+                   h3(tags$b("Most Common Directors")),
+                   plotlyOutput("director_plot")
                  )
                ),
+               br(),
+               br(),
                column(
                  width = 3,
+                 valueBoxOutput(width = 16, "pop_cast"),
+                 valueBoxOutput(width = 16, "pop_dir"),
                  box(
                    width = 16,
-                   height = 475,
                    background = "black",
                    sliderInput(
                      inputId = "year_added",
@@ -187,8 +193,111 @@ dashboardPage(
                      width = "100%",
                      sep = ""
                    )
+                 ),
+                 
+               )),
+               
+               
+               fluidRow(column(
+                 width = 9,
+                 box(
+                   width = 16,
+                   solidHeader = T,
+                   h3(tags$b("Number of Casts by Countries")),
+                   plotlyOutput("no_cast")
+                 )
+               ),
+               column(
+                 width = 3,
+                 box(
+                   solidHeader = T,
+                   width = 16,
+                   height = 475,
+                   background = "black",
+                   pickerInput(
+                     inputId = "country_input",
+                     label = h4(tags$b("Select Country:")),
+                     choices = unique(df_netflix$main_country),
+                     options = list(`actions-box` = TRUE, `live-search` = TRUE),
+                     multiple = T,
+                     selected = unique(df_netflix$country)
+                   ),
+                   checkboxGroupInput(
+                     inputId = "movie_tv",
+                     label = h4(tags$b("Movies/TV Shows Categories:")),
+                     choices = unique(df_netflix$type),
+                     selected = unique(df_netflix$type)
+                   )
+                 ),
+               )),
+               
+               
+               fluidRow(column(
+                 width = 9,
+                 box(
+                   width = 16,
+                   solidHeader = T,
+                   h3(tags$b("Distribution of Age of Contents")),
+                   h5(tags$b("By Time Difference to The Latest Content")),
+                   plotlyOutput("age_dist")
+                 )
+               ),
+               column(
+                 width = 3,
+                 box(
+                   width = 16,
+                   height = 500,
+                   solidHeader = T,
+                   background = "black",
+                   checkboxGroupInput(
+                     inputId = "viewers_cat",
+                     label = h4(tags$b("Select Viewers Category: ")),
+                     choices = unique(df_netflix$target_age),
+                     selected = unique(df_netflix$target_age)
+                   ),
+                   chooseSliderSkin("Nice"),
+                   sliderInput(
+                     inputId = "release_year",
+                     label = h4(tags$b("Year Range of Content Release:")),
+                     min = min(df_netflix$release_year),
+                     max = max(df_netflix$release_year),
+                     value = c(min(df_netflix$release_year), max(df_netflix$release_year)),
+                     width = "100%",
+                     sep = ""
+                   )
                  )
                )),
+               
+               
+               fluidRow(
+                 box(
+                   width = 12,
+                   solidHeader = T,
+                   background = "red",
+                   column(width = 9,
+                          h3(
+                            tags$b("Netflix Content Distribution by Country")
+                          )),
+                   column(
+                     width = 3,
+                     checkboxGroupInput(
+                       inputId = "mtv_map",
+                       label = h4(tags$b("Movie/TV Show: ")),
+                       choices = unique(df_netflix$type),
+                       selected = unique(df_netflix$type),
+                       inline = T
+                     )
+                   )
+                 )
+               ),
+               fluidRow(
+                 box(
+                   width = 12,
+                   solidHeader = T,
+                   plotlyOutput("map_dist", height = 580)
+                 )
+               ),
+               
                
                
        ),
