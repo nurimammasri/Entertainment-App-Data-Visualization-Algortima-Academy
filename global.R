@@ -168,7 +168,7 @@ top_type <- df_netflix %>%
   arrange(desc(n_type)) %>%
   mutate(percent = round(n_type / sum(n_type), 2))
 
-
+library(maps)
 # For World Map
 mapdata <- map_data("world")
 
