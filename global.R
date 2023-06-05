@@ -119,11 +119,9 @@ df_netflix <- df_netflix %>%
 
 # Handling Feature extraction
 df_netflix <- df_netflix %>%
-  mutate(
-    main_country = map(str_split(country, ", "), 1),
-    main_cast = map(str_split(cast, ", "), 1),
-    genre = map(str_split(listed_in, ", "), 1)
-  ) %>%
+  mutate(main_country=sapply(str_split(country, ", "), FUN = function(y) {y[[1]]}),
+         main_cast = sapply(str_split(cast, ", "), FUN = function(y) {y[[1]]}),
+         genre = sapply(str_split(listed_in, ", "), FUN = function(y) {y[[1]]})) %>% 
   unnest(cols = c(main_country, main_cast, genre)) %>%
   mutate(
     type = as.factor(type),

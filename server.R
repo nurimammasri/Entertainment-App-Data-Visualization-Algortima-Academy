@@ -561,9 +561,9 @@ shinyServer(function(input, output) {
   
   # Show Datasets Spotify
   output$data_spotify <- renderDataTable({
-    DT::datatable(data = spotify, options = list(
+    DT::datatable(data = head(spotify, 100), options = list(
       scrollX=T,
-      pageLength = nrow(spotify)%%8,
+      pageLength = 5,
       initComplete = JS(
         "function(settings, json) {",
         "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
@@ -572,9 +572,9 @@ shinyServer(function(input, output) {
   })
   
   output$data_spotify_genre <- renderDataTable({
-    DT::datatable(data = spotify_genre, options = list(
+    DT::datatable(data = head(spotify_genre, 100), options = list(
       scrollX=T,
-      pageLength = nrow(spotify_genre)%%8,
+      pageLength = 8,
       initComplete = JS(
         "function(settings, json) {",
         "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
@@ -583,9 +583,9 @@ shinyServer(function(input, output) {
   })
   
   output$data_spotify_year <- renderDataTable({
-    DT::datatable(data = spotify_year, options = list(
+    DT::datatable(data = head(spotify_year, 100), options = list(
       scrollX=T,
-      pageLength = nrow(spotify_year)%%8,
+      pageLength = 8,
       initComplete = JS(
         "function(settings, json) {",
         "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
@@ -598,9 +598,9 @@ shinyServer(function(input, output) {
   
   # Show Datasets Netflix
   output$data_netflix <- renderDataTable({
-    DT::datatable(data = df_netflix, options = list(
+    DT::datatable(data = head(df_netflix, 100), options = list(
       scrollX=T,
-      pageLength = nrow(df_netflix)%%8,
+      pageLength = 5,
       initComplete = JS(
         "function(settings, json) {",
         "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",

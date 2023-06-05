@@ -577,6 +577,7 @@ dashboardPage(
       tabItem(tabName = "tab_data",
               fluidPage(
                 h2(tags$b("Understanding Data Spotify")),
+                p("Mengambil 100 samples data"),
                 tabBox(
                   width = 12,
                   title = tags$b("There are 3 types of data used"),
@@ -602,6 +603,7 @@ dashboardPage(
                 ),
                 br(),
                 h2(tags$b("Understanding Data Netflix")),
+                p("Mengambil 100 samples data"),
                 dataTableOutput(outputId = "data_netflix"),
                 br(),
                 div(
