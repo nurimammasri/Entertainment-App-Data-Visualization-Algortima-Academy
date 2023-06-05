@@ -576,20 +576,43 @@ dashboardPage(
       
       tabItem(tabName = "tab_data",
               fluidPage(
-                h2(tags$b("Understanding the Data")),
-                br(),
-                dataTableOutput(outputId = "data"),
+                h2(tags$b("Understanding Data Spotify")),
+                tabBox(
+                  width = 12,
+                  title = tags$b("There are 3 types of data used"),
+                  side = "left",
+                  tabPanel(tags$b("All"),
+                           dataTableOutput(outputId = "data_spotify"),
+                  ),
+                  tabPanel(tags$b("by Genre"),
+                    dataTableOutput(outputId = "data_spotify_genre"),
+                  ),
+                  tabPanel(tags$b("by Year"),
+                           dataTableOutput(outputId = "data_spotify_year"),
+                  )
+                ),
                 br(),
                 div(
                   style = "text-align:justify",
                   p(
                     "This dashboard uses a dataset from ",
                     tags$a(href = "https://www.kaggle.com/datasets/vatsalmavani/spotify-dataset", "kaggle"),
-                    " which is cleaned"
-                  ),
-                  
-                  br()
-                )
+                    " "
+                  )
+                ),
+                br(),
+                h2(tags$b("Understanding Data Netflix")),
+                dataTableOutput(outputId = "data_netflix"),
+                br(),
+                div(
+                  style = "text-align:justify",
+                  p(
+                    "This dashboard uses a dataset from ",
+                    tags$a(href = "https://www.kaggle.com/datasets/edriendominickofina/netflix-titles", "kaggle"),
+                    " "
+                  )
+                ),
+              
               )),
       
       # PAGE 3
