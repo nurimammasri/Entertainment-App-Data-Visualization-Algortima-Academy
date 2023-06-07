@@ -71,16 +71,15 @@ data_agg1
 ```
 
 ```{r}
-plot1 <- ggplot(data_agg1, mapping=aes(x = year, y = Value)) + 
-  geom_line(aes(color = Variable))  + 
-  scale_color_manual(values = c("red", "green", "orange", "purple", "blue", "black", "darkgreen")) + 
-  guides(color = "none") + 
-  labs(x = "Year", y = "Value", title = "Preference Music Taste in the Past Century on Spotify") + 
-  scale_x_continuous(limits = c(1921, 2020), breaks = seq(1921, 2020, 10)) +
+plot_time <- ggplot(data_year, aes(x = year, y = value)) +
+  geom_line(aes(color = variable)) +
+  scale_color_manual(name = "Taste", values = c("acousticness" = "red", "energy" = "green", "instrumentalness" = "orange", "liveness" = "purple")) +
+  labs(x = "Year", y = "Value", title = "Music Taste in the Past Century") +
+  scale_x_continuous(limits = c(1920, 2020),
+                     breaks = seq(1920, 2020, 20)) +
   theme_minimal()
 
-
-ggplotly(plot1)
+ggplotly(plot_time)
 ```
 
 ```{r}

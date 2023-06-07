@@ -55,7 +55,7 @@ shinyServer(function(input, output) {
       hc_tooltip(
         formatter = JS(
           "function(){
-                            return (this.point.type + ' <br> Jumlah : ' + this.point.n_type + '('+this.point.percent+')')
+                            return (this.point.type + ' <br> Jumlah : ' + this.point.n_type + ' ('+this.point.percent*100+'%)')
                             }"
         )
       )
@@ -419,8 +419,7 @@ shinyServer(function(input, output) {
   output$plot1 <- renderPlotly({
     plot_time <- ggplot(data_year, aes(x = year, y = value)) +
       geom_line(aes(color = variable)) +
-      scale_color_manual(values = c("red", "green", "orange", "purple")) +
-      guides(color = "none") +
+      scale_color_manual(name = "Taste", values = c("acousticness" = "red", "energy" = "green", "instrumentalness" = "orange", "liveness" = "purple")) +
       labs(x = "Year", y = "Value", title = "Music Taste in the Past Century") +
       scale_x_continuous(limits = c(1920, 2020),
                          breaks = seq(1920, 2020, 20)) +
